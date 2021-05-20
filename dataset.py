@@ -30,10 +30,10 @@ class DAVIS_MO_Test(data.Dataset):  #这里是继承pytorch的dataset类(data.Da
                 _video = line.rstrip('\n')
                 self.videos.append(_video)
                 self.num_frames[_video] = len(glob.glob(os.path.join(self.image_dir, _video, '*.jpg')))
-                _mask = np.array(Image.open(os.path.join(self.mask_dir, _video, '00000.png')).convert("P"))
+                _mask = np.array(Image.open(os.path.join(self.mask_dir, _video, '00000.png')).convert("P")) #读取mask并且convert成palette（调色板）格式
                 self.num_objects[_video] = np.max(_mask)
                 self.shape[_video] = np.shape(_mask)
-                _mask480 = np.array(Image.open(os.path.join(self.mask480_dir, _video, '00000.png')).convert("P"))
+                _mask480 = np.array(Image.open(os.path.join(self.mask480_dir, _video, '00000.png')).convert("P")) #读取mask并且convert成palette格式
                 self.size_480p[_video] = np.shape(_mask480)
 
         self.K = 11
@@ -57,12 +57,12 @@ class DAVIS_MO_Test(data.Dataset):  #这里是继承pytorch的dataset类(data.Da
 
     def __getitem__(self, index):
         video = self.videos[index]
-        info = {}
+        info = {} #字典
         info['name'] = video
         info['num_frames'] = self.num_frames[video]
         info['size_480p'] = self.size_480p[video]
 
-        N_frames = np.empty((self.num_frames[video],)+self.shape[video]+(3,), dtype=np.float32)
+        N_frames = np.empty((self.num_frames[video],)+self.shape[video]+(3,), dtype=np.float32) # np.empty 返回一个数组，大小是
         N_masks = np.empty((self.num_frames[video],)+self.shape[video], dtype=np.uint8)
         for f in range(self.num_frames[video]):
             img_file = os.path.join(self.image_dir, video, '{:05d}.jpg'.format(f))
@@ -76,7 +76,7 @@ class DAVIS_MO_Test(data.Dataset):  #这里是继承pytorch的dataset类(data.Da
         
         Fs = torch.from_numpy(np.transpose(N_frames.copy(), (3, 0, 1, 2)).copy()).float()
         if self.single_object:
-            N_masks = (N_masks > 0.5).astype(np.uint8) * (N_masks < 255).astype(np.uint8)
+            N_masks = (N_masks > 0.5).astype(np.uint8) * (N_masks < 255).astype(np.uint8) # 数值在0.5和255之间的？
             Ms = torch.from_numpy(self.All_to_onehot(N_masks).copy()).float()
             num_objects = torch.LongTensor([int(1)])
             return Fs, Ms, num_objects, info
