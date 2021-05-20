@@ -9,7 +9,7 @@ from torch.utils import data
 
 import glob
 
-class DAVIS_MO_Test(data.Dataset):
+class DAVIS_MO_Test(data.Dataset):  #这里是继承pytorch的dataset类(data.Dataset),需要重写 __init__, __len__, and __getitem__ 这3个函数
     # for multi object, do shuffling
 
     def __init__(self, root, imset='2017/train.txt', resolution='480p', single_object=False):
